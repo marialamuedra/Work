@@ -1,0 +1,84 @@
+function getEmailInfo() {
+
+    var currentSheetTab = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0]; //Main tab in the Assignment Hub 
+    var sheetRange = currentSheetTab.getDataRange();
+    var sheetValues = sheetRange.getValues(); //This creates an array of the values in the data range
+    var lastRow = sheetRange.getLastRow() - 1;
+
+    for (var i = 1; i <= lastRow; i++) {
+
+        var correctionStatus = currentSheetTab.getRange(i + 1, 33);
+        var URLbase = "https://docs.google.com/spreadsheets/d/";
+        var fileID = currentSheetTab.getRange(i + 1, 14).getValue();
+        var profileURL = URLbase + fileID;
+        var entityName = currentSheetTab.getRange(i + 1, 3).getValue();
+        var entityType = currentSheetTab.getRange(i + 1, 5).getValue();
+        var QAcompleted = currentSheetTab.getRange(i + 1, 31).getValue();
+        var QAstatus = currentSheetTab.getRange(i + 1, 18).getValue();
+
+        var todayDate = new Date();
+        var millisPerWeek = 8 * 1000 * 24 * 60 * 60;
+        //var olderThanAWeek=new Date(todayDate.getTime() - QAcompleted.getTime() - millisPerWeek);
+        var olderThanAWeek = new Date(todayDate.getTime() - millisPerWeek);
+
+        if (QAstatus == "Done" && correctionStatus.getValue() == "" && QAcompleted != 0 && olderThanAWeek - QAcompleted >= 0) {
+
+            var email = "";
+            var RAName = currentSheetTab.getRange(i + 1, 2).getValue();
+            var subject = "Pending " + entityType;
+            var message = "You have QAs pending, please complete them when you have a moment:" + "\n" + entityName + " " + profileURL;
+            var messageStatus = "Email OK";
+
+            switch (RAName) {
+                case "Name":
+                    email = "name1@dowjones.com";
+                    break;
+                case "Name2":
+                    email = "name2@dowjones.com";
+                    break;
+                case "Name3":
+                    email = "name3@dowjones.com";
+                    break;
+                default:
+                    email = "myemail@dowjones.com";
+                    subject = "Invalid email";
+                    message = "A valid email couldn't be found to send this QA: " + entityName + " " + profileURL;
+                    messageStatus = "Invalid email";
+                    break;
+            };
+            sendReminder(currentSheetTab, email, subject, message);
+            currentSheetTab.getRange(i + 1, 6).setValue(messageStatus);
+
+        } else if (QAstatus == "Done" && correctionStatus.getValue() != "" && correctionStatus.getValue() != "Done" && correctionStatus.getValue() != "Pending" && olderThanAWeek - QAcompleted >= 0) {
+
+            var errorEmail = "myemail@dowjones.com";
+            var errorSubject = "Invalid correction status";
+            var errorMessage = "There was an error sending this QA: " + entityName + " " + profileURL;
+            var errorMessageStatus = "Invalid correction status";
+            sendWrongEmail(currentSheetTab, errorEmail, errorSubject, errorMessage);
+            currentSheetTab.getRange(i + 1, 6).setValue(errorMessageStatus);
+
+        } else if (QAstatus == "Done" && correctionStatus.getValue() == "" && QAcompleted == 0) {
+
+            var timeEmail = "myemail@dowjones.com";
+            var timeSubject = "Missing time";
+            var timeMessage = "There was an error sending this QA: " + entityName + " " + profileURL;
+            var errorTime = "Time is missing";
+            sendTimeEmail(currentSheetTab, timeEmail, timeSubject, timeMessage);
+            currentSheetTab.getRange(i + 1, 6).setValue(errorTime);
+        }
+
+    }
+};
+
+function sendReminder(currentSheetTab, email, subject, message) {
+    MailApp.sendEmail(email, subject, message);
+};
+
+function sendWrongEmail(currentSheetTab, errorEmail, errorSubject, errorMessage) {
+    MailApp.sendEmail(errorEmail, errorSubject, errorMessage);
+};
+
+function sendTimeEmail(currentSheetTab, timeEmail, timeSubject, timeMessage) {
+    MailApp.sendEmail(timeEmail, timeSubject, timeMessage);
+};
