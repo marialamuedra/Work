@@ -1,0 +1,9 @@
+function backup() {
+
+    var fileID = "rand0mL1st0fnumb3rsAnDl3tt3r5"; // the file ID we want to duplicate
+    var destFolder = DriveApp.getFolderById("An0th3rRand0mL1st0fnumb3rsAnDl3tt3r5"); // the folder where the copy should go into
+    var formatDate = Utilities.formatDate(new Date(), "GMT", "MM-dd-YYYY"); // today's date, formatted
+    var newDocName = formatDate + " backup of file"; // name for the copy we're creating
+    var backup = DriveApp.getFileById("rand0mL1st0fnumb3rsAnDl3tt3r5").makeCopy(newDocName, destFolder);
+
+}
